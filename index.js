@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
-const jwt = require('jsonwebtoken');
+const jwt = require("jsonwebtoken");
 const { MongoClient, ServerApiVersion, MongoRuntimeError } = require("mongodb");
 const app = express();
 const port = process.env.PORT || 5000;
@@ -15,7 +15,6 @@ const client = new MongoClient(uri, {
   useUnifiedTopology: true,
   serverApi: ServerApiVersion.v1,
 });
-
 
 async function run() {
   try {
