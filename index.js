@@ -1,15 +1,13 @@
-const express = require('express');
-const cors = require('cors');
-const jwt = require('jsonwebtoken');
-require('dotenv').config();
-const { MongoClient, ServerApiVersion } = require('mongodb');
-const ObjectId = require('mongodb').ObjectId;
-
+const express = require("express");
+const cors = require("cors");
+const jwt = require("jsonwebtoken");
+require("dotenv").config();
+const { MongoClient, ServerApiVersion } = require("mongodb");
+const ObjectId = require("mongodb").ObjectId;
 app = express();
-port = process.env.PORT || 5000
+port = process.env.PORT || 5000;
 
-
-//middleware 
+//middleware
 app.use(cors());
 app.use(express.json());
 
@@ -24,12 +22,12 @@ const client = new MongoClient(uri, {
 function verifyJWT(req, res, next) {
   const authHeader = req.headers.authorization;
   if (!authHeader) {
-    return res.status(401).send({ message: 'UnAuthorized access' });
+    return res.status(401).send({ message: "UnAuthorized access" });
   }
-  const token = authHeader.split(' ')[1];
+  const token = authHeader.split(" ")[1];
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
     if (err) {
-      return res.status(403).send({ message: 'Forbidden access' })
+      return res.status(403).send({ message: "Forbidden access" });
     }
     req.decoded = decoded;
     next();
@@ -39,7 +37,54 @@ function verifyJWT(req, res, next) {
 async function run() {
   try {
     await client.connect();
-    const serviceCollection = client.db("h-power").collection("services");
+    const partsCollection = client.db("h-power").collection("parts");
+    const ordersCollection = client.db("h-power").collection("orders");
+    const userCollection = client.db("h-power").collection("users");
+    const reviewCollection = client.db("h-power").collection("review");
+    console.log("db connected");
+
+    // Admin Verify
+    const verifyAdmin = async (req, res, next) => {
+      const requester = req.decoded.email;
+      const requesterAccount = await userCollection.findOne({ email: requester });
+      if (requesterAccount.role === 'admin') {
+        next();
+      }
+      else {
+        res.status(403).send({ message: 'forbidden' });
+      }
+    }
+    // home title 
+    app.get('/', (req, res) => {
+      res.send('Manufacture Server is Running Successfully.')
+    })
+
+    // user get
+    app.get("/users", async (req, res) => {
+      const users = await userCollection.find({}).toArray();
+      res.send(users);
+    });
+
+    // admin
+    app.get('/admin/:email', async (req, res) => {
+      const email = req.params.email;
+      const user = await userCollection.findOne({ email: email });
+      const isAdmin = user.role === 'admin';
+      res.send({ admin: isAdmin })
+    })
+    // user admin api
+    app.put('/users/admin/:email', async (req, res) => {
+      const email = req.params.email;
+      const filter = { email: email };
+      const updateDoc = {
+        $set: { role: 'admin' },
+      };
+      const result = await userCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    })
+
+
+
     app.get("/service", async (req, res) => {
       const query = {};
       const cursor = serviceCollection.find(query);
