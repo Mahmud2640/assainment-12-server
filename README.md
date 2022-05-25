@@ -4,7 +4,7 @@ This is project Live Link [H-Power Manufacturer](https://h-power-8ab5a.web.app).
 
 ## Available Scripts
 
-In the project i using ---- :
+In the project i using  ---- :
 
 ### `React`
 
@@ -27,3 +27,4 @@ In the project i using ---- :
 ### `Api Integration`
 
 ### `NodeMon`
+### `JWT`

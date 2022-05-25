@@ -171,21 +171,10 @@ async function run() {
       );
       res.send({ result, token });
     });
-
-    // copy done
-    app.get("/service", async (req, res) => {
-      const query = {};
-      const cursor = serviceCollection.find(query);
-      const services = await cursor.toArray();
-      res.send(services);
-    });
   } finally {
   }
 }
 run().catch(console.dir);
-app.get("/", (req, res) => {
-  res.send("Hello World! this is a test");
-});
 
 app.listen(port, () => {
   console.log(`manufacture app listening on port ${port}`);
