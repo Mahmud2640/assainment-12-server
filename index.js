@@ -7,7 +7,6 @@ const ObjectId = require("mongodb").ObjectId;
 app = express();
 port = process.env.PORT || 5000;
 
-//middleware
 app.use(cors());
 app.use(express.json());
 
@@ -18,7 +17,6 @@ const client = new MongoClient(uri, {
   serverApi: ServerApiVersion.v1,
 });
 
-// jwt token
 function verifyJWT(req, res, next) {
   const authHeader = req.headers.authorization;
   if (!authHeader) {
@@ -41,9 +39,7 @@ async function run() {
     const ordersCollection = client.db("h-power").collection("orders");
     const userCollection = client.db("h-power").collection("users");
     const reviewCollection = client.db("h-power").collection("review");
-    console.log("db connected");
 
-    // Admin Verify
     const verifyAdmin = async (req, res, next) => {
       const requester = req.decoded.email;
       const requesterAccount = await userCollection.findOne({
@@ -55,23 +51,23 @@ async function run() {
         res.status(403).send({ message: "forbidden" });
       }
     };
-    // home title
+
     app.get("/", (req, res) => {
       res.send("Manufacture Server is Running Successfully.");
     });
-    // user get
+
     app.get("/users", async (req, res) => {
       const users = await userCollection.find({}).toArray();
       res.send(users);
     });
-    // admin
+
     app.get("/admin/:email", async (req, res) => {
       const email = req.params.email;
       const user = await userCollection.findOne({ email: email });
       const isAdmin = user.role === "admin";
       res.send({ admin: isAdmin });
     });
-    // user admin api
+
     app.put("/users/admin/:email", async (req, res) => {
       const email = req.params.email;
       const filter = { email: email };
@@ -81,65 +77,64 @@ async function run() {
       const result = await userCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
-    // review Post api
+
     app.post("/review", async (req, res) => {
       const newProducts = req.body;
       const result = await reviewCollection.insertOne(newProducts);
       res.send(result);
     });
-    // review get and load all data by reviews
+
     app.get("/review", async (req, res) => {
       const review = await reviewCollection.find({}).toArray();
       res.send(review);
     });
-    // get parts data
+
     app.get("/parts", async (req, res) => {
       const parts = await partsCollection.find({}).toArray();
       res.send(parts);
     });
-    // get parts id api
+
     app.get("/parts/:id", async (req, res) => {
       const id = req.params;
       const query = { _id: ObjectId(id) };
       const result = await partsCollection.findOne(query);
       res.send(result);
     });
-    //parts collection post api
+
     app.post("/parts", async (req, res) => {
       const products = req.body;
       const result = await partsCollection.insertOne(products);
       res.send(result);
     });
-    // delete a product
+
     app.delete("/parts/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
       const result = await partsCollection.deleteOne(query);
       res.send(result);
     });
-    //order collection post api
+
     app.post("/orders", async (req, res) => {
       const orders = req.body;
       const result = await ordersCollection.insertOne(orders);
       res.send(result);
     });
-    // delete a order
+
     app.delete("/orders/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
       const result = await ordersCollection.deleteOne(query);
       res.send(result);
     });
-    // get orders
+
     app.get("/orders", async (req, res) => {
       const users = await ordersCollection.find().toArray();
       res.send(users);
     });
-    // get orders by email
+
     app.get("/orderss", verifyJWT, async (req, res) => {
       const decodedEmail = req.decoded.email;
       const email = req.query.email;
-      // console.log(email);
       if (email === decodedEmail) {
         const query = { email: email };
         const cursor = ordersCollection.find(query);
@@ -149,12 +144,12 @@ async function run() {
         res.status(403).send({ message: "forbidden access" });
       }
     });
-    // get user
+
     app.get("/users", async (req, res) => {
       const users = await userCollection.find().toArray();
       res.send(users);
     });
-    // post user
+
     app.put("/users/:email", async (req, res) => {
       const email = req.params.email;
       const user = req.body;
