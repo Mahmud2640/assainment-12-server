@@ -7,7 +7,6 @@ const ObjectId = require("mongodb").ObjectId;
 app = express();
 port = process.env.PORT || 5000;
 
-
 // middleware added to express app
 app.use(cors());
 app.use(express.json());
@@ -36,6 +35,7 @@ function verifyJWT(req, res, next) {
   });
 }
 
+// function to connect to mongoDB database
 async function run() {
   try {
     await client.connect();
@@ -44,6 +44,7 @@ async function run() {
     const userCollection = client.db("h-power").collection("users");
     const reviewCollection = client.db("h-power").collection("review");
 
+    // verify admin
     const verifyAdmin = async (req, res, next) => {
       const requester = req.decoded.email;
       const requesterAccount = await userCollection.findOne({
@@ -56,15 +57,18 @@ async function run() {
       }
     };
 
+    // root api
     app.get("/", (req, res) => {
       res.send("Manufacture Server is Running Successfully.");
     });
 
+    // user get api
     app.get("/users", async (req, res) => {
       const users = await userCollection.find({}).toArray();
       res.send(users);
     });
 
+    // admin get api
     app.get("/admin/:email", async (req, res) => {
       const email = req.params.email;
       const user = await userCollection.findOne({ email: email });
@@ -72,6 +76,7 @@ async function run() {
       res.send({ admin: isAdmin });
     });
 
+    // user admin put api
     app.put("/users/admin/:email", async (req, res) => {
       const email = req.params.email;
       const filter = { email: email };
@@ -82,22 +87,26 @@ async function run() {
       res.send(result);
     });
 
+    // review post api
     app.post("/review", async (req, res) => {
       const newProducts = req.body;
       const result = await reviewCollection.insertOne(newProducts);
       res.send(result);
     });
 
+    // review get api
     app.get("/review", async (req, res) => {
       const review = await reviewCollection.find({}).toArray();
       res.send(review);
     });
 
+    // parts get api
     app.get("/parts", async (req, res) => {
       const parts = await partsCollection.find({}).toArray();
       res.send(parts);
     });
 
+    // parts id get api
     app.get("/parts/:id", async (req, res) => {
       const id = req.params;
       const query = { _id: ObjectId(id) };
@@ -105,12 +114,14 @@ async function run() {
       res.send(result);
     });
 
+    // parts post api
     app.post("/parts", async (req, res) => {
       const products = req.body;
       const result = await partsCollection.insertOne(products);
       res.send(result);
     });
 
+    // parts put api
     app.delete("/parts/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
@@ -118,12 +129,14 @@ async function run() {
       res.send(result);
     });
 
+    // orders put api
     app.post("/orders", async (req, res) => {
       const orders = req.body;
       const result = await ordersCollection.insertOne(orders);
       res.send(result);
     });
 
+    // orders put api
     app.delete("/orders/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
@@ -131,11 +144,13 @@ async function run() {
       res.send(result);
     });
 
+    // orders get api
     app.get("/orders", async (req, res) => {
       const users = await ordersCollection.find().toArray();
       res.send(users);
     });
 
+    // orders get api
     app.get("/orderss", verifyJWT, async (req, res) => {
       const decodedEmail = req.decoded.email;
       const email = req.query.email;
@@ -149,11 +164,13 @@ async function run() {
       }
     });
 
+    // users get api
     app.get("/users", async (req, res) => {
       const users = await userCollection.find().toArray();
       res.send(users);
     });
 
+    // users put api
     app.put("/users/:email", async (req, res) => {
       const email = req.params.email;
       const user = req.body;
