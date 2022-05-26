@@ -7,9 +7,12 @@ const ObjectId = require("mongodb").ObjectId;
 app = express();
 port = process.env.PORT || 5000;
 
+
+// middleware added to express app
 app.use(cors());
 app.use(express.json());
 
+// mongoDB connection url
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.xjpc8.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, {
   useNewUrlParser: true,
@@ -17,6 +20,7 @@ const client = new MongoClient(uri, {
   serverApi: ServerApiVersion.v1,
 });
 
+// verify JWT token
 function verifyJWT(req, res, next) {
   const authHeader = req.headers.authorization;
   if (!authHeader) {
